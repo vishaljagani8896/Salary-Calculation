@@ -1,0 +1,479 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 50px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container">
+    <h2>Salary Breakup Calculator (From CTC Salary)</h2>
+    <label for="grossSalary">CTC Salary per month:</label>
+    <input type="number" id="grossSalary" placeholder="Enter gross salary">
+    <button onclick="validateSalary()">Calculate</button>
+    <table id="outputTable">
+        <tr>
+            <th>Components In salary</th>
+            <th>Percentage</th>
+            <th>Per Month</th>
+            <th>Per Annum</th>
+        </tr>
+        <tr>
+            <td>Basic Salary (calculated on CTC)</td>
+            <td>50%</td>
+            <td id="basicSalary">0</td>
+            <td id="basicSalaryAnnual">0</td>
+        </tr>
+        <tr>
+            <td>HRA (calculated on CTC)</td>
+            <td>20%</td>
+            <td id="hra">0</td>
+            <td id="hraAnnual">0</td>
+        </tr>
+        <tr>
+            <td>Conveyance allowances</td>
+            <td>Fixed</td>
+            <td id="conveAllowances">0</td>
+            <td id="conveAllowancesAnnual">0</td>
+        </tr>
+        <tr>
+            <td>Special allowances</td>
+            <td>Balance Amount</td>
+            <td id="specialAllowances">0</td>
+            <td id="specialAllowancesAnnual">0</td>
+        </tr>
+        <tr>
+            <th>Total Gross Salary</th>
+            <th></th>
+            <th id="totalGrossSalary">0</th>
+            <th id="totalGrossSalaryAnnual">0</th>
+        </tr>
+        <tr>
+            <td>PF contribution by employee</td>
+            <td>12%</td>
+            <td id="pfContriEmp">0</td>
+            <td id="pfContriEmpAnnual">0</td>
+        </tr>
+        <tr>
+            <td>Retention</td>
+            <td>Fixed</td>
+            <td id="retention">0</td>
+            <td id="retentionAnnual">0</td>
+        </tr>
+        <tr>
+            <td>Professional Tax (PT)</td>
+            <td>Fixed</td>
+            <td id="profTax">0</td>
+            <td id="profTaxAnnual">0</td>
+        </tr>
+        <tr>
+            <td>ESIC</td>
+            <td></td>
+            <td id="esic">0</td>
+            <td id="esicAnnual">0</td>
+        </tr>
+        <tr>
+            <td>TDS</td>
+            <td>As per Slabs</td>
+            <td id="tds">0</td>
+            <td id="tdsAnnual">0</td>
+        </tr>
+        <tr>
+            <th>Total deductions (PF+PT+Retention+TDS)</th>
+            <th></th>
+            <th id="totalDeduc">0</th>
+            <th id="totalDeducAnnual">0</th>
+        </tr>
+        <tr>
+            <th>Net Salary (Gross-Total deductions)</th>
+            <th></th>
+            <th id="netSalary">0</th>
+            <th id="netSalaryAnnual">0</th>
+        </tr>
+        <tr>
+            <th>CTC Calculation</th>
+        </tr>
+        <tr>
+            <td>Employer PF contribution with admin charges</td>
+            <td>13%</td>
+            <td id="employerContri">0</td>
+            <td id="employerContriAnnual">0</td>
+        </tr>
+        <tr>
+            <td>ESIC (Employer)</td>
+            <td></td>
+            <td id="esicEmp">0</td>
+            <td id="esicEmpAnnual">0</td>
+        </tr>
+        <tr>
+            <th>CTC= Gross salary + (Employer PF+ ESI)</th>
+            <th></th>
+            <th id="finalCTC">0</th>
+            <th id="finalCTCAnnual">0</th>
+        </tr>
+        <tr>
+            <th>CTC For Adding Balance Amount </th>
+            <th></th>
+            <th id="addBal">0</th>
+            <!-- <th id="finalCTCAnnual">0</th> -->
+        </tr>
+        <tr>
+            <th>Balance Amount Calculation</th>
+            <th></th>
+            <th id="balCal">0</th>
+            <!-- <th id="finalCTCAnnual">0</th> -->
+        </tr>
+    </table>
+</div>
+
+<script>
+    let grossSalary = document.getElementById("grossSalary");
+    let basicSalary = document.getElementById("basicSalary");
+    let basicSalaryAnnual = document.getElementById("basicSalaryAnnual");
+    let hra = document.getElementById("hra");
+    let hraAnnual = document.getElementById("hraAnnual");
+    let conveAllowances = document.getElementById("conveAllowances");
+    let conveAllowancesAnnual = document.getElementById("conveAllowancesAnnual");
+    let specialAllowances = document.getElementById("specialAllowances");
+    let specialAllowancesAnnual = document.getElementById(
+        "specialAllowancesAnnual"
+    );
+    let totalGrossSalary = document.getElementById("totalGrossSalary");
+    let totalGrossSalaryAnnual = document.getElementById("totalGrossSalaryAnnual");
+    let pfContriEmp = document.getElementById("pfContriEmp");
+    let pfContriEmpAnnual = document.getElementById("pfContriEmpAnnual");
+    let retention = document.getElementById("retention");
+    let retentionAnnual = document.getElementById("retentionAnnual");
+    let profTax = document.getElementById("profTax");
+    let profTaxAnnual = document.getElementById("profTaxAnnual");
+    let tds = document.getElementById("tds");
+    let tdsAnnual = document.getElementById("tdsAnnual");
+    let esic = document.getElementById("esic");
+    let esicAnnual = document.getElementById("esicAnnual");
+    let totalDeduc = document.getElementById("totalDeduc");
+    let totalDeducAnnual = document.getElementById("totalDeducAnnual");
+    let netSalary = document.getElementById("netSalary");
+    let netSalaryAnnual = document.getElementById("netSalaryAnnual");
+    let employerContri = document.getElementById("employerContri");
+    let employerContriAnnual = document.getElementById("employerContriAnnual");
+    let esicEmp = document.getElementById("esicEmp");
+    let esicEmpAnnual = document.getElementById("esicEmpAnnual");
+    let finalCTC = document.getElementById("finalCTC");
+    let finalCTCAnnual = document.getElementById("finalCTCAnnual");
+    let addBal = document.getElementById("addBal");
+    let balCal = document.getElementById("balCal");
+
+    // grossSalary.value = 22000;
+    // validateSalary();
+
+    function validateSalary() {
+        if (Math.round(grossSalary.value) >= 14961) {
+            calculateSalary();
+        } else {
+            alert("Please Enter a value more than 14961.");
+        }
+    }
+
+    function calculateSalary() {
+        const grossSalaryget = Math.round(grossSalary.value);
+        //   const grossSalaryget = 18000;
+        let basicSalaryValue = grossSalaryget * 0.5;
+
+        basicSalaryValue > 12870
+            ? (basicSalary.textContent = basicSalaryValue)
+            : (basicSalary.textContent = 12870);
+
+        hra.textContent = (grossSalaryget * 0.2);
+
+        conveAllowances.textContent = (1600);
+
+        // let specialAllowancesValue =
+        //     grossSalaryget -
+        //     (Math.round(basicSalary.textContent) +
+        //         Math.round(hra.textContent) +
+        //         Math.round(conveAllowances.textContent));
+
+        let specialAllowancesValue = 0;
+
+
+        specialAllowances.textContent = specialAllowancesValue;
+
+
+        totalGrossSalary.textContent = (
+            Math.round(basicSalary.textContent) +
+            Math.round(hra.textContent) +
+            Math.round(conveAllowances.textContent) +
+            Math.round(specialAllowances.textContent)
+        );
+
+
+        if (Math.round(basicSalary.textContent) <= 15000) {
+            employerContri.textContent = (
+                Math.round(Math.round(basicSalary.textContent) * 0.13)
+            );
+        } else {
+            employerContri.textContent = Math.round(15000 * 0.13);
+        }
+
+        if (Math.round(totalGrossSalary.textContent) <= 21000) {
+            esicEmp.textContent = (
+                Math.round(Math.round(totalGrossSalary.textContent) * 0.0325)
+            );
+        } else {
+            esicEmp.textContent = (0);
+        }
+
+        addBal.textContent = Math.round(totalGrossSalary.textContent) + Math.round(employerContri.textContent) + Math.round(esicEmp.textContent);
+
+        balCal.textContent = (Math.round(grossSalaryget) - Math.round(addBal.textContent));
+
+        specialAllowances.textContent = Math.round(balCal.textContent)
+
+        ///2nd time=========================
+
+        totalGrossSalary.textContent = (
+            Math.round(basicSalary.textContent) +
+            Math.round(hra.textContent) +
+            Math.round(conveAllowances.textContent) +
+            Math.round(specialAllowances.textContent)
+        );
+
+
+        if (Math.round(basicSalary.textContent) <= 15000) {
+            employerContri.textContent = (
+                Math.round(Math.round(basicSalary.textContent) * 0.13)
+            );
+        } else {
+            employerContri.textContent = Math.round(15000 * 0.13);
+        }
+
+        if (Math.round(totalGrossSalary.textContent) <= 21000) {
+            esicEmp.textContent = (
+                Math.round(Math.round(totalGrossSalary.textContent) * 0.0325)
+            );
+        } else {
+            esicEmp.textContent = (0);
+        }
+
+        addBal.textContent = Math.round(totalGrossSalary.textContent) + Math.round(employerContri.textContent) + Math.round(esicEmp.textContent);
+
+        balCal.textContent = (Math.round(grossSalaryget) - Math.round(addBal.textContent));
+
+        //3rd time===========
+
+
+        if (Math.round(balCal.textContent) < 0) {
+            specialAllowances.textContent = (Math.round(specialAllowances.textContent) + Math.round(balCal.textContent));
+
+            totalGrossSalary.textContent = (
+                Math.round(basicSalary.textContent) +
+                Math.round(hra.textContent) +
+                Math.round(conveAllowances.textContent) +
+                Math.round(specialAllowances.textContent)
+            );
+
+
+            if (Math.round(basicSalary.textContent) <= 15000) {
+                employerContri.textContent = (
+                    Math.round(Math.round(basicSalary.textContent) * 0.13)
+                );
+            } else {
+                employerContri.textContent = Math.round(15000 * 0.13);
+            }
+
+            if (Math.round(totalGrossSalary.textContent) <= 21000) {
+                esicEmp.textContent = (
+                    Math.round(Math.round(totalGrossSalary.textContent) * 0.0325)
+                );
+            } else {
+                esicEmp.textContent = (0);
+            }
+
+            addBal.textContent = Math.round(totalGrossSalary.textContent) + Math.round(employerContri.textContent) + Math.round(esicEmp.textContent);
+
+            balCal.textContent = (Math.round(grossSalaryget) - Math.round(addBal.textContent));
+        }
+
+        //4th time====================
+        function changeBalance() {
+            specialAllowances.textContent = (Math.round(specialAllowances.textContent) + Math.round(balCal.textContent));
+
+            totalGrossSalary.textContent = (
+                Math.round(basicSalary.textContent) +
+                Math.round(hra.textContent) +
+                Math.round(conveAllowances.textContent) +
+                Math.round(specialAllowances.textContent)
+            );
+
+
+            if (Math.round(basicSalary.textContent) <= 15000) {
+                employerContri.textContent = (
+                    Math.round(Math.round(basicSalary.textContent) * 0.13)
+                );
+            } else {
+                employerContri.textContent = Math.round(15000 * 0.13);
+            }
+
+            if (Math.round(totalGrossSalary.textContent) <= 21000) {
+                esicEmp.textContent = (
+                    Math.round(Math.round(totalGrossSalary.textContent) * 0.0325)
+                );
+            } else {
+                esicEmp.textContent = (0);
+            }
+
+            addBal.textContent = Math.round(totalGrossSalary.textContent) + Math.round(employerContri.textContent) + Math.round(esicEmp.textContent);
+
+            balCal.textContent = (Math.round(grossSalaryget) - Math.round(addBal.textContent));
+
+            if (Math.round(balCal.textContent) != 0 && Math.round(balCal.textContent) != -1 && Math.round(balCal.textContent) != 1) {
+                changeBalance();
+            }
+        }
+
+        if (Math.round(balCal.textContent) != 0 && Math.round(balCal.textContent) != -1 && Math.round(balCal.textContent) != 1) {
+            changeBalance();
+        }
+
+        if (Math.round(specialAllowances.textContent) < 0) {
+            let specialAllowanceNew = -Math.round(specialAllowances.textContent);
+
+            if (specialAllowanceNew < Math.round(conveAllowances.textContent)) {
+                conveAllowances.textContent = (
+                    Math.round(conveAllowances.textContent) - specialAllowanceNew
+                );
+            } else {
+                let specialAllowanceNewNew = (specialAllowanceNew - 1600);
+                //   conveAllowances.textContent = (
+                //     Math.round(conveAllowances.textContent) - specialAllowanceNew
+                //   );
+                hra.textContent = (
+                    Math.round(hra.textContent) - specialAllowanceNewNew
+                );
+                conveAllowances.textContent = (0);
+                specialAllowances.textContent = (0);
+            }
+        } else {
+            specialAllowances.textContent = Math.round(specialAllowances.textContent);
+        }
+
+        if (Math.round(basicSalary.textContent) <= 15000) {
+            pfContriEmp.textContent = (
+                Math.round(Math.round(basicSalary.textContent) * 0.12)
+            );
+        } else {
+            pfContriEmp.textContent = Math.round(15000 * 0.12);
+        }
+
+        retention.textContent = (2000);
+        profTax.textContent = (200);
+
+        if (Math.round(totalGrossSalary.textContent) <= 21000) {
+            esic.textContent = Math.round(Math.round(totalGrossSalary.textContent) * 0.0075);
+        } else {
+            esic.textContent = (0);
+        }
+
+        tds.textContent = (0);
+
+        totalDeduc.textContent = (
+            Math.round(pfContriEmp.textContent) +
+            Math.round(retention.textContent) +
+            Math.round(profTax.textContent) +
+            Math.round(esic.textContent) +
+            Math.round(tds.textContent)
+        );
+
+        netSalary.textContent = (
+            Math.round(totalGrossSalary.textContent) -
+            Math.round(totalDeduc.textContent)
+        );
+
+
+
+        finalCTC.textContent = (
+            Math.round(totalGrossSalary.textContent) +
+            Math.round(employerContri.textContent) +
+            Math.round(esicEmp.textContent)
+        );
+
+        annualValues();
+    }
+
+    function annualValues() {
+        basicSalaryAnnual.textContent = (basicSalary.textContent * 12);
+
+        hraAnnual.textContent = (hra.textContent * 12);
+
+        conveAllowancesAnnual.textContent = (
+            conveAllowances.textContent * 12
+        );
+
+        specialAllowancesAnnual.textContent = (
+            specialAllowances.textContent * 12
+        );
+
+        totalGrossSalaryAnnual.textContent = (
+            totalGrossSalary.textContent * 12
+        );
+
+        pfContriEmpAnnual.textContent = (pfContriEmp.textContent * 12);
+
+        retentionAnnual.textContent = (retention.textContent * 12);
+
+        profTaxAnnual.textContent = (profTax.textContent * 12);
+
+        esicAnnual.textContent = (esic.textContent * 12);
+
+        tdsAnnual.textContent = (tds.textContent * 12);
+
+        totalDeducAnnual.textContent = (totalDeduc.textContent * 12);
+
+        netSalaryAnnual.textContent = (netSalary.textContent * 12);
+
+        employerContriAnnual.textContent = (employerContri.textContent * 12)
+
+        esicEmpAnnual.textContent = (esicEmp.textContent * 12);
+
+        finalCTCAnnual.textContent = (finalCTC.textContent * 12);
+    }
+
+</script>
